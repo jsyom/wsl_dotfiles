@@ -1,4 +1,6 @@
 # wsl_dotfiles
+Basic quick setup
+
 1. Enable-WindowsOptionalFeature -Online -FeatureName Microsoft-Windows-Subsystem-Linux
 2. install distro
 3. clone
