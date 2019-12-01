@@ -6,6 +6,6 @@
 5. git
   - ssh-keygen -t rsa -b 4096 -C "EMAIL ADDRESS"
 6. git clone git@github.com:jsyom/wsl_dotfiles ~/.dotfiles
-7. chmod 700 .dotfiles/ -R
+7. chmod 700 ~/.dotfiles/ -R
 8. sudo apt install vim-gtk
 9. Install VcXsrv https://sourceforge.net/projects/vcxsrv/
