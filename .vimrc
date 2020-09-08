@@ -18,6 +18,8 @@ Plugin 'pangloss/vim-javascript'
 Plugin 'mxw/vim-jsx'
 Plugin 'junegunn/fzf', { 'do': './install --all' }
 Plugin 'junegunn/fzf.vim'
+Plugin 'vim-scripts/SQLUtilities'
+Plugin 'vim-scripts/Align'
 call vundle#end()
 filetype plugin indent on
 
@@ -35,6 +37,7 @@ endif
 set bg=dark
 silent! colo gruvbox
 let g:gruvbox_contrast_dark = 'soft'
+set ttyfast
 
 " Editor Settings
 set encoding=utf-8
@@ -51,6 +54,7 @@ set laststatus=2
 set showcmd
 set novisualbell
 set backspace=indent,eol,start
+set noswapfile
 set timeoutlen=500
 set ttimeoutlen=50
 set hlsearch " CTRL-L / CTRL-R W
@@ -106,7 +110,7 @@ noremap <silent> <expr> j (v:count == 0 ? 'gj' : 'j')
 noremap <silent> <expr> k (v:count == 0 ? 'gk' : 'k')
 map <leader>e :e! ~/.vimrc<cr>
 nmap <leader>w :w!<cr>
-map <silent> <leader><cr> :noh<cr>
+map <silent> <leader><cr> :nohl<cr>
 " Open new line below and above current line
 nnoremap <leader>o o<esc>
 nnoremap <leader>O O<esc>
@@ -146,7 +150,46 @@ let NERDTreeQuitOnOpen = 1
 let NERDTreeShowHidden=1
 let NERDTreeAutoDeleteBuffer = 0
 noremap <C-e> :NERDTreeToggle<cr>
+" noremap <leader>' :%s/^\(.*\)$/"\1",/<CR>ddggyG <bar> :nohl<cr> Gg$dw
+noremap <leader>' :%s/^\(.*\)$/"\1",/<CR> <bar> :nohl<cr> Gddg$dwggyG
 
+" FZF {{{
+let g:fzf_layout = { 'down': '40%' }
+" Jump to the existing window if possible
+let g:fzf_buffers_jump = 1
+
+" Search project files, respecting git ignore
+nnoremap <silent> <C-f> :FZF<CR>
+" Search all files, e.g. node_modules/
+nnoremap <silent> <leader>af :call fzf#vim#files('',
+      \ {'source': 'ag --hidden --ignore .git -f -g "" -u', 'down': '40%'})<CR>
+" Search MRU buffers
+nnoremap <silent> <leader>f :Buffers<CR>
+nnoremap <silent> <leader>` :Marks<CR>
+nnoremap <space>g :GitFiles<CR>
+nnoremap <space>c :Commits<CR>
+" [Tags] Command to generate tags file
+" let g:fzf_tags_command = 'ctags -R --exclude=.git --exclude=node_modules --exclude=test'
+nnoremap <silent> <leader>l :Lines<CR>
+nnoremap <silent> <leader>t :Tags<CR>
+nnoremap <silent> <leader>b :BTags<CR>
+
+function! s:fzf_statusline()
+  " Override statusline as you like
+  highlight fzf1 ctermfg=161 ctermbg=251
+  highlight fzf2 ctermfg=23 ctermbg=251
+  highlight fzf3 ctermfg=237 ctermbg=251
+  setlocal statusline=%#fzf1#\ >\ %#fzf2#fz%#fzf3#f
+endfunction
+
+autocmd! User FzfStatusLine call <SID>fzf_statusline()
+" }}}
+
+vmap <silent>sf        <Plug>SQLU_Formatter<CR>
+nmap <silent>scl       <Plug>SQLU_CreateColumnList<CR>
+nmap <silent>scd       <Plug>SQLU_GetColumnDef<CR>
+nmap <silent>scdt      <Plug>SQLU_GetColumnDataType<CR>
+nmap <silent>scp       <Plug>SQLU_CreateProcedure<CR>
 " Vim-Commentary
 map  gc  <Plug>Commentary
 nmap gcc <Plug>CommentaryLine

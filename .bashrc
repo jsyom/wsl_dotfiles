@@ -12,19 +12,23 @@ export PATH=${PATH}:~/bin:~/.local/bin:~/etc/scripts
 export EDITOR=/usr/bin/vim
 # Color prompt
 export TERM=xterm-256color
-# export PATH=$HOME/bin:$PATH
+export PATH=$PATH:$HOME/bin
+export PATH=$HOME/bin:$PATH
 export CLICOLOR=1
 export LSCOLORS=ExFxBxDxCxegedabagacad
 export LS_COLORS="ow=1;34:di=1;34"
 export MYVIMRC=$HOME/.vimrc
 export DOTFILES=$HOME/.dotfiles
+export PERSONAL=$HOME/desktop/personal
 export LANG='en_US.UTF-8';
 export LC_ALL='en_US.UTF-8';
 export WINUSER=john.yom.CORP
 export WINPATH="/mnt/c/Users/$WINUSER"
 export DISPLAY=localhost:0.0
+CURL_CA_BUNDLE="/etc/ssl/certs/ca-certificates.crt"
 
 # Aliases
+alias person="cd $PERSONAL"
 alias winhome="cd $WINPATH"
 alias dot="cd ~/.dotfiles"
 alias refresh="source ~/.bashrc"
@@ -66,6 +70,45 @@ alias soenv="source venv/bin/activate"
 # }
 
 source ~/.git-completion.bash
+
+# Normalize `open` across Linux, macOS, and Windows.
+# This is needed to make the `o` function (see below) cross-platform.
+if [ ! $(uname -s) = 'Darwin' ]; then
+	if grep -q Microsoft /proc/version; then
+		# Ubuntu on Windows using the Linux subsystem
+		alias open='explorer.exe';
+	else
+		alias open='xdg-open';
+	fi
+fi
+
+# `o` with no arguments opens the current directory, otherwise opens the given
+# location
+function o() {
+	if [ $# -eq 0 ]; then
+		open .;
+	else
+		open "$@";
+	fi;
+}
+
+# `tre` is a shorthand for `tree` with hidden files and color enabled, ignoring
+# the `.git` directory, listing directories first. The output gets piped into
+# `less` with options to preserve color and line numbers, unless the output is
+# small enough for one screen.
+function tre() {
+	tree -aC -I '.git|node_modules|bower_components' --dirsfirst "$@" | less -FRNX;
+}
+
+gitdiffb() {
+  if [ $# -ne 2 ]; then
+    echo two branch names required
+    return
+  fi
+  git log --graph \
+  --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr)%Creset' \
+  --abbrev-commit --date=relative $1..$2
+}
 
 # 'Safe' version of __git_ps1 to avoid errors on systems that don't have it
 function gitPrompt {
@@ -125,8 +168,41 @@ gitBranch() {
     git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/(\1)/'
 }
 
-# Patent Pending Prompt
-# export PS1="${pathC}\w ${gitC}\$(gitPrompt)${pointerC}▶${normalC} "
 
 export PS1="${pathC}\w ${gitC}\$(gitBranch) ${pointerC}\$${normalC} "
 
+if [ -n "$VIRTUAL_ENV" ]; then
+    source $VIRTUAL_ENV/bin/activate;
+fi
+
+venv() {
+    case $1 in
+        "")
+            source venv/bin/activate
+            if [[ -n "$TMUX" ]]; then
+                tmux set-environment VIRTUAL_ENV $VIRTUAL_ENV
+            fi
+        ;;
+        create)
+            shift 1
+            _create_venv "$@"
+        ;;
+        create3)
+            shift 1
+            _create_venv "$@" -p python3
+        ;;
+        deactivate)
+            _deactivate_venv
+        ;;
+        delete)
+            _deactivate_venv
+            rm -rf venv/
+        ;;
+    esac
+}
+
+# export NVM_DIR="$HOME/.nvm"
+# [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+# [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+
+[ -f ~/.fzf.bash ] && source ~/.fzf.bash
